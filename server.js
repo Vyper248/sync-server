@@ -13,7 +13,7 @@ const globalStorage = {};
 
 app.get('/', (req, res) => {
     console.log(globalStorage);
-    res.send('Ready');
+    res.json({status: 'Ready'});
 });
 
 app.post('/api/send', (req, res) => {
@@ -26,16 +26,16 @@ app.post('/api/send', (req, res) => {
         if (globalStorage[id].syncComplete === true) {
             clearInterval(interval);
             delete globalStorage[id];
-            if (obj.type === 'failed') return res.send('Sync Failed');
-            else if (obj.type === 'down') return res.send(filterDeleted(obj.objects));
-            else if (obj.type === 'merge') return res.send(obj.objects);
-            else return res.send('Sync Complete');
+            if (obj.type === 'failed') return res.json({status: 'error', data: 'Sync Failed'});
+            else if (obj.type === 'down') return res.json({status: 'success', data: filterDeleted(obj.objects)});
+            else if (obj.type === 'merge') return res.json({status: 'success', data: obj.objects});
+            else return res.json({status: 'success', data: 'Sync Complete'});
         }
         numberChecks++;
         if (numberChecks > 120) {
             clearInterval(interval);
             delete globalStorage[id];
-            res.send('Sync Timed Out - Please complete the sync within 1 minute');
+            res.json({status: 'error', data: 'Sync Timed Out - Please complete the sync within 1 minute'});
         }
     }, 500);
 });
@@ -45,30 +45,30 @@ app.post('/api/receive', (req, res) => {
     let id = obj.uniqueID;
     let sentObj = globalStorage[id];
 
-    if (!sentObj) return res.send('Failed - no data found');
+    if (!sentObj) return res.json({status: 'error', data: 'Failed - no data found'});
 
     if (obj.appId !== sentObj.appId) {
         sentObj.type = 'failed';
         sentObj.syncComplete = true;
-        return res.send('This data is from a different app.');
+        return res.json({status: 'error', data: 'This data is from a different app.'});
     }
 
     if (sentObj.type === 'up') { //if up, merge sent object to receiving device
         sentObj.syncComplete = true;
-        return res.send(filterDeleted(sentObj.objects));
+        return res.json({status: 'success', data: filterDeleted(sentObj.objects)});
     } else if (sentObj.type === 'down') { //if down, merge receiving object to sent device
         sentObj.objects = obj.objects;
         sentObj.syncComplete = true;
-        return res.send('Sync Complete');
+        return res.json({status: 'success', data: 'Sync Complete'});
     } else if (sentObj.type === 'merge') { //if merge, merge objects and send back to both devices
         let returnData = mergeData(sentObj.objects, obj.objects);
         sentObj.objects = returnData;
         sentObj.syncComplete = true;
-        return res.send(returnData);
+        return res.json({status: 'success', data: returnData});
     } else { //if wrong type, fail sync
         sentObj.syncComplete = true;
         sentObj.type = 'failed';
-        return res.send('Failed - Incorrect Type');
+        return res.json({status: 'errr=or', data: 'Failed - Incorrect Type'});
     }
 });
 
