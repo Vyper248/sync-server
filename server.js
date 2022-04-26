@@ -13,7 +13,7 @@ const globalStorage = {};
 
 app.get('/', (req, res) => {
     console.log(globalStorage);
-    res.send('Checked');
+    res.send('Ready');
 });
 
 app.post('/api/send', (req, res) => {
