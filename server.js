@@ -32,10 +32,10 @@ app.post('/api/send', (req, res) => {
             else return res.json({status: 'success', data: 'Sync Complete'});
         }
         numberChecks++;
-        if (numberChecks > 120) {
+        if (numberChecks > 58) {
             clearInterval(interval);
             delete globalStorage[id];
-            res.json({status: 'error', data: 'Sync Timed Out - Please complete the sync within 1 minute'});
+            res.json({status: 'error', data: 'Sync Timed Out - Please complete the sync within 30 seconds'});
         }
     }, 500);
 });
