@@ -68,7 +68,7 @@ app.post('/api/receive', (req, res) => {
     } else { //if wrong type, fail sync
         sentObj.syncComplete = true;
         sentObj.type = 'failed';
-        return res.json({status: 'errr=or', data: 'Failed - Incorrect Type'});
+        return res.json({status: 'error', data: 'Failed - Incorrect Type'});
     }
 });
 
